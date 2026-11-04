@@ -1,0 +1,110 @@
+/* ==========================================================================
+   TOKENS — Solarized Light · Direção A "Ficha Técnica"
+   Fonte da verdade da cor. Razões de contraste calculadas em
+   scripts/check-contrast.mjs (npm run check:contrast) — se mexer aqui, rode.
+   ========================================================================== */
+
+:root {
+  /* --- Solarized canônico ------------------------------------------------ */
+  --sol-base03: #002b36; /* seções escuras, títulos gigantes */
+  --sol-base02: #073642; /* texto principal sobre claro; superfície escura */
+  --sol-base01: #586e75; /* secundário — SÓ sobre base3 */
+  --sol-base1: #93a1a1; /* secundário em escuro; decoração em claro */
+  --sol-base2: #eee8d5; /* superfícies, nav */
+  --sol-base3: #fdf6e3; /* fundo principal */
+
+  --sol-orange: #cb4b16; /* decorativo / texto grande / traço do preloader */
+  --sol-orange-ink: #bf4210; /* AÇÃO: fundo de CTA (texto base3 = 4,86:1) */
+
+  /* cores de "sintaxe": chips, pontos, marquee, logo — nunca ação */
+  --sol-blue: #268bd2;
+  --sol-cyan: #2aa198;
+  --sol-magenta: #d33682;
+  --sol-violet: #6c71c4;
+  --sol-green: #859900;
+  --sol-yellow: #b58900;
+
+  /* extras de UI herdados do tema do VS Code */
+  --sol-select: #dfca88; /* ::selection e barra de progresso (yellow) */
+  --sol-line: #ddd6c1; /* borda de painel / barra de título */
+  --sol-ink-2: #385c62; /* secundário SOBRE base2 (5,96:1) */
+  --sol-dim-dark: #bec2b5; /* parágrafo secundário em escuro (white-75) */
+
+  /* --- Tipografia -------------------------------------------------------- */
+  --font-sans: "Telegraf", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Fraktion Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* --- Movimento --------------------------------------------------------- */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Layout ------------------------------------------------------------ */
+  --nav-h: 3.5rem;
+  --pad: clamp(1rem, 3vw, 3rem);
+  --maxw: 90rem;
+  --radius: 0;
+  --shadow-hard: 4px 4px 0 var(--sol-base02); /* sombra dura, nunca blur */
+
+  /* --- Escopo padrão: claro (base3) --------------------------------------
+     Também vale para [data-theme="light"] (abaixo). Sem isso, uma seção
+     "light" herdaria as variáveis do <body>, cujo tema muda com a rolagem. */
+  --bg: var(--sol-base3);
+  --surface: var(--sol-base2);
+  --fg: var(--sol-base02);
+  --fg-strong: var(--sol-base03);
+  --fg-2: var(--sol-ink-2);
+  --fg-3: var(--sol-base01);
+  --line: rgba(7, 54, 66, 0.15);
+  --line-strong: var(--sol-base02);
+  --focus: var(--sol-base02);
+}
+
+[data-theme="light"] {
+  --bg: var(--sol-base3);
+  --surface: var(--sol-base2);
+  --fg: var(--sol-base02);
+  --fg-strong: var(--sol-base03);
+  --fg-2: var(--sol-ink-2);
+  --fg-3: var(--sol-base01);
+  --line: rgba(7, 54, 66, 0.15);
+  --line-strong: var(--sol-base02);
+  --focus: var(--sol-base02);
+}
+
+/* Intermediário: seção sobre base2 (o secundário vira #385C62, nunca base01) */
+[data-theme="mid"] {
+  --bg: var(--sol-base2);
+  --surface: var(--sol-base3);
+  --fg: var(--sol-base02);
+  --fg-strong: var(--sol-base03);
+  --fg-2: var(--sol-ink-2);
+  --fg-3: var(--sol-ink-2);
+  --line: rgba(7, 54, 66, 0.18);
+  --focus: var(--sol-base02);
+}
+
+/* Escuro: base03 + texto base2 */
+[data-theme="dark"] {
+  --bg: var(--sol-base03);
+  --surface: var(--sol-base02);
+  --fg: var(--sol-base2);
+  --fg-strong: var(--sol-base2);
+  --fg-2: var(--sol-dim-dark);
+  --fg-3: var(--sol-base1);
+  --line: rgba(238, 232, 213, 0.15);
+  --line-strong: var(--sol-base2);
+  --focus: var(--sol-base2);
+}
+
+/* Destaque: bloco 100% orange-ink com texto base3 (4,86:1) */
+[data-theme="accent"] {
+  --bg: var(--sol-orange-ink);
+  --surface: var(--sol-orange-ink);
+  --fg: var(--sol-base3);
+  --fg-strong: var(--sol-base3);
+  --fg-2: var(--sol-base3);
+  --fg-3: var(--sol-base3);
+  --line: rgba(253, 246, 227, 0.4);
+  --line-strong: var(--sol-base3);
+  --focus: var(--sol-base3);
+}

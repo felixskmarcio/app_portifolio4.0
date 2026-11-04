@@ -1,0 +1,392 @@
+/* ==========================================================================
+   CHROME — preloader, navegação, menu mobile, WhatsApp, cursor
+   ========================================================================== */
+
+/* ---------- 1 · Preloader ---------------------------------------------- */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+  background: var(--sol-base3);
+  color: var(--sol-base03);
+  clip-path: inset(0 0 0 0);
+}
+.preloader__logo {
+  width: min(70vw, 30rem);
+  aspect-ratio: 140 / 24;
+}
+.preloader__logo svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.pre-stroke {
+  /* pathLength=1 nos caminhos: o traço começa "não desenhado" já no 1º paint */
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  fill: none;
+  stroke: var(--sol-orange);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.pre-fill {
+  fill: var(--sol-base03);
+}
+.preloader__count {
+  min-width: 3.5em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--sol-base01);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+/* visita recorrente na mesma sessão: sem preloader */
+html.is-returning .preloader {
+  display: none;
+}
+/* rede de segurança em CSS puro: se o JS falhar, o overlay some sozinho */
+@keyframes failsafe-hide {
+  to {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+html.js .preloader {
+  animation: failsafe-hide 0s 9s forwards;
+}
+
+/* ---------- Navegação: barra de título fixa, base2 ---------------------- */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: var(--nav-h);
+  background: var(--sol-base2);
+  color: var(--fg);
+  border-bottom: 1px solid var(--sol-line);
+}
+.nav__in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+.nav__logo {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--sol-base03);
+}
+.nav__logo svg {
+  width: 7rem;
+  height: auto;
+  aspect-ratio: 140 / 24;
+  overflow: visible;
+}
+.felix-mark {
+  fill: currentColor;
+}
+.particle {
+  animation: drift 6s ease-in-out infinite alternate;
+}
+.particle:nth-of-type(2) {
+  animation-delay: -1.2s;
+  animation-duration: 7s;
+}
+.particle:nth-of-type(3) {
+  animation-delay: -2.4s;
+  animation-duration: 5.4s;
+}
+.particle:nth-of-type(4) {
+  animation-delay: -3.6s;
+  animation-duration: 6.6s;
+}
+.particle:nth-of-type(5) {
+  animation-delay: -4.8s;
+  animation-duration: 7.4s;
+}
+@keyframes drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(3px, -2px);
+  }
+}
+
+.nav__links {
+  display: none;
+  gap: clamp(1rem, 2.4vw, 2.5rem);
+}
+.nav__links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  min-height: 2.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sol-base02);
+}
+.nav__links .idx {
+  color: var(--sol-ink-2);
+}
+/* seção ativa: sublinhado 2px orange-ink, sem glow */
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.45rem;
+  height: 2px;
+  background: var(--sol-orange-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s var(--ease-out-quart);
+}
+.nav__links a[aria-current="location"]::after {
+  transform: scaleX(1);
+}
+
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav__cta {
+  padding-inline: 1rem;
+}
+
+.nav__toggle {
+  position: relative;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--sol-base03);
+}
+.nav__toggle span {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  height: 2px;
+  background: currentColor;
+  transition: transform 0.45s var(--ease-out-quart);
+}
+.nav__toggle span:nth-child(1) {
+  top: 1.05rem;
+}
+.nav__toggle span:nth-child(2) {
+  top: 1.6rem;
+}
+.nav__toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(0.275rem) rotate(45deg);
+}
+.nav__toggle[aria-expanded="true"] span:nth-child(2) {
+  transform: translateY(-0.275rem) rotate(-45deg);
+}
+
+@media (min-width: 992px) {
+  .nav__links {
+    display: flex;
+  }
+  .nav__toggle {
+    display: none;
+  }
+}
+@media (max-width: 479px) {
+  .nav__logo svg {
+    width: 5.5rem;
+  }
+  .nav__cta {
+    padding-inline: 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ---------- Menu mobile: tela cheia base03 ------------------------------ */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--nav-h) + 2rem) var(--pad) 2rem;
+  background: var(--bg);
+  color: var(--fg);
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path 0.7s var(--ease-out-quint),
+    visibility 0s 0.7s;
+}
+.menu.is-open {
+  visibility: visible;
+  clip-path: inset(0 0 0 0);
+  transition:
+    clip-path 0.7s var(--ease-out-quint),
+    visibility 0s 0s;
+}
+.menu__links a {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  min-height: 2.75rem;
+  padding-block: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(2.5rem, 12vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--sol-base2);
+}
+.menu__links .idx {
+  font-size: 0.8125rem;
+}
+.menu__foot {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 992px) {
+  .menu {
+    display: none;
+  }
+}
+
+/* ---------- WhatsApp flutuante ------------------------------------------ */
+.wa-cta {
+  position: fixed;
+  right: var(--pad);
+  bottom: var(--pad);
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sol-base3);
+  background: var(--sol-orange-ink);
+  border: 1px solid var(--sol-base2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  transition:
+    background-color 0.6s var(--ease-out-quart),
+    border-color 0.6s var(--ease-out-quart),
+    box-shadow 0.6s var(--ease-out-quart),
+    transform 0.35s var(--ease-out-quart);
+}
+.wa-cta svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: currentColor;
+}
+@media (hover: hover) {
+  .wa-cta:hover {
+    transform: translate(-2px, -2px);
+  }
+}
+/* 2 · a cor do botão acompanha o tema da seção sob ele */
+body[data-theme="accent"] .wa-cta {
+  background: var(--sol-base03);
+  border-color: var(--sol-base3);
+  box-shadow: 4px 4px 0 var(--sol-base3);
+}
+body[data-theme="dark"] .wa-cta {
+  box-shadow: 4px 4px 0 var(--sol-base2);
+}
+@media (max-width: 767px) {
+  .wa-cta {
+    padding: 0;
+  }
+  .wa-cta__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* menu aberto: o botão flutuante não pode cobrir o CTA do menu */
+html.menu-open .wa-cta {
+  visibility: hidden;
+}
+
+/* ---------- 7 · Rótulo "VER" que segue o mouse -------------------------- */
+.cursor-label {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 130;
+  display: none;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: -2.25rem 0 0 -2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sol-orange-ink);
+  color: var(--sol-base3);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cursor-label {
+    display: grid;
+  }
+}
+
+/* ---------- 6 · Cursor de tinta (laranja + azul, picos em amarelo) ------ */
+.ink {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+}
+body[data-theme="dark"] .ink {
+  mix-blend-mode: screen;
+}
+
+/* ---------- movimento reduzido ------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .particle {
+    animation: none;
+  }
+  .ink,
+  .cursor-label {
+    display: none !important;
+  }
+  .nav__links a:hover,
+  .nav__links a:focus-visible,
+  .menu__links a:hover,
+  .menu__links a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+}
