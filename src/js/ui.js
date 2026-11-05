@@ -60,12 +60,16 @@ export function initCursorLabel({ reduced }) {
   const targets = $$("[data-cursor-label]");
   if (!label || !targets.length || reduced || !finePointerMQ.matches) return;
 
+  // só agora o CSS pode esconder o cursor do sistema sobre os cards
+  document.documentElement.classList.add("has-cursor-label");
+
   const x = gsap.quickTo(label, "x", { duration: 0.35, ease: "power3.out" });
   const y = gsap.quickTo(label, "y", { duration: 0.35, ease: "power3.out" });
 
   targets.forEach((el) => {
     el.addEventListener("pointerenter", (e) => {
       if (e.pointerType !== "mouse") return;
+      label.classList.add("is-armed"); // 1ª vez: passa a existir (e carrega a fonte Bold)
       gsap.set(label, { x: e.clientX, y: e.clientY });
       gsap.to(label, { scale: 1, opacity: 1, duration: 0.35, ease: "easeOutQuart", overwrite: "auto" });
     });
@@ -79,13 +83,21 @@ export function initCursorLabel({ reduced }) {
   });
 }
 
-/** Copiar e-mail: troca o ícone copiar→check (como o original) e avisa leitores de tela. */
+/**
+ * Copiar e-mail: troca o ícone copiar→check (como o original) e avisa leitores de tela.
+ * Se copiar falhar (navegador bloqueou), diz isso e aponta o e-mail ao lado, que está
+ * visível e selecionável; antes o botão simplesmente não respondia.
+ */
 export function initCopy() {
   const status = $("[data-copy-status]");
 
   $$("[data-copy]").forEach((btn) => {
+    const label = $("span:not([aria-hidden])", btn); // o texto do botão (os colchetes e o ícone são aria-hidden)
+    const idle = label?.textContent;
+
     btn.addEventListener("click", async () => {
       const text = btn.dataset.copy;
+      let copied = true;
       try {
         await navigator.clipboard.writeText(text);
       } catch {
@@ -94,15 +106,22 @@ export function initCopy() {
         ta.style.cssText = "position:fixed;opacity:0";
         document.body.append(ta);
         ta.select();
-        document.execCommand("copy");
+        copied = document.execCommand("copy");
         ta.remove();
       }
-      btn.classList.add("is-copied");
-      if (status) status.textContent = "Email copiado";
+
+      if (copied) {
+        btn.classList.add("is-copied");
+        if (status) status.textContent = "E-mail copiado";
+      } else {
+        if (label) label.textContent = "Não copiou: selecione o e-mail";
+        if (status) status.textContent = "Não foi possível copiar. Selecione o e-mail ao lado e copie.";
+      }
       setTimeout(() => {
         btn.classList.remove("is-copied");
+        if (label && idle) label.textContent = idle;
         if (status) status.textContent = "";
-      }, 2000);
+      }, 2500);
     });
   });
 }

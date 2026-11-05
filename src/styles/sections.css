@@ -11,10 +11,15 @@ main > section {
   position: relative;
 }
 
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
 .sec-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 1rem;
+  gap: 0 1rem;
 }
 
 /* ---------- HERO (base3) ------------------------------------------------ */
@@ -27,6 +32,8 @@ main > section {
 }
 .hero__main {
   position: relative;
+  /* container de largura: o H1 se dimensiona por ele (cqw), sem esperar o JS */
+  container-type: inline-size;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -46,12 +53,21 @@ main > section {
   right: calc(var(--pad) - 0.5rem);
 }
 .hero__title {
-  /* --h1-size é calculado em JS (fit-text); o clamp é o fallback sem JS */
+  /* --h1-size só existe se o JS (fit-text) medir uma diferença > 0,8%. Sem JS ou sem
+     cqw, o clamp em vw é o fallback. */
+  font-family: var(--font-sans-caps);
   font-size: var(--h1-size, clamp(2.4rem, 10.2vw, 11rem));
   line-height: 0.92;
   letter-spacing: -0.025em;
   text-transform: uppercase;
   color: var(--fg-strong);
+}
+/* "DESENVOLVEDOR" a 100px mede 8,025 em com o tracking real (medido na Telegraf);
+   ×0,995 de folga = a mesma conta do fitHero, agora no 1º paint. Limites = 28–260px. */
+@supports (width: 1cqw) {
+  .hero__title {
+    font-size: var(--h1-size, clamp(1.75rem, calc(100cqw / 8.0653), 16.25rem));
+  }
 }
 .hero__line {
   display: block;
@@ -109,7 +125,7 @@ html.js-motion .hero__line-in {
   opacity: 0.55;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   /* mobile: o conteúdo sobe e o hero deixa de forçar 100svh (sem vazio acima do H1) */
   .hero {
     min-height: auto;
@@ -119,11 +135,11 @@ html.js-motion .hero__line-in {
     padding-block: 3.5rem 2rem;
   }
   .hero__meta {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .meta-col,
   .meta-col + .meta-col {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     padding: 0.7rem 0;
     border-left: 0;
     border-bottom: 1px solid var(--line);
@@ -137,9 +153,51 @@ html.js-motion .hero__line-in {
 
 /* ---------- Marquee de sintaxe (faixa base03) --------------------------- */
 .marquee {
+  display: flex;
   background: var(--sol-base03);
   color: var(--sol-base2);
   overflow: hidden;
+}
+.marquee__view {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+/* controle de pausa (WCAG 2.2.2): coluna própria com filete, no idioma da ficha técnica */
+.marquee__pause {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(2.75rem + 2 * clamp(0.5rem, 1.6vw, 1.25rem));
+  border-right: 1px solid var(--line);
+  color: var(--fg);
+  transition:
+    background-color 0.35s var(--ease-out-quart),
+    color 0.35s var(--ease-out-quart);
+}
+/* o foco fica por dentro: o .marquee corta (overflow) qualquer contorno externo */
+.marquee__pause:focus-visible {
+  outline-color: var(--sol-base03);
+  outline-offset: -5px;
+  background: var(--sol-base2);
+  color: var(--sol-base03);
+}
+@media (hover: hover) {
+  .marquee__pause:hover {
+    background: var(--sol-base2);
+    color: var(--sol-base03);
+  }
+}
+.marquee__pause .icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.marquee__pause .i-play,
+html.motion-paused .marquee__pause .i-pause {
+  display: none;
+}
+html.motion-paused .marquee__pause .i-play {
+  display: block;
 }
 .marquee__track {
   display: flex;
@@ -152,6 +210,7 @@ html.js-motion .hero__line-in {
   align-items: center;
 }
 .marquee__list li {
+  font-family: var(--font-sans-caps); /* as palavras são caixa alta: reserva calibrada p/ maiúsculas */
   display: flex;
   align-items: center;
   padding-block: 1rem;
@@ -169,8 +228,13 @@ html.js-motion .hero__line-in {
 /* ---------- TRABALHOS (base2) — galeria horizontal fixada --------------- */
 .work {
   /* largura do card: limitada pela altura da tela (o card inteiro precisa caber
-     no pin) e pela largura (nunca passa de 60vw nem de 62rem), proporção 16:9 */
-  --card-w: clamp(20rem, min(60vw, calc((100svh - var(--nav-h) - 20.5rem) * 16 / 9)), 62rem);
+     no pin) e pela largura (nunca passa de 60vw nem de 80rem), proporção 16:9.
+     O teto era 62rem: em 1920×1080 e 2560×1440 sobrava uma faixa vazia enorme sob os cards. */
+  --card-w: clamp(20rem, min(60vw, calc((100svh - var(--nav-h) - 20.5rem) * 16 / 9)), 80rem);
+  /* onde começa o conteúdo do container (centrado, máx. --maxw). O título "Trabalhos" já
+     vive nele; o trilho começava na borda da janela (em 2560px: título em x=652, 1º card em x=46).
+     A % resolve no uso, contra a largura do pin. */
+  --gutter: max(var(--pad), calc((100% - var(--maxw)) / 2 + var(--pad)));
 }
 .work__pin {
   display: flex;
@@ -181,6 +245,8 @@ html.js-motion .hero__line-in {
 }
 .work__head {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
@@ -216,16 +282,21 @@ html.js-motion .hero__line-in {
 .work__track {
   display: flex;
   gap: clamp(1rem, 2vw, 2rem);
-  padding-inline: var(--pad);
+  /* começa no container; o fim sangra até a borda (--pad), como antes */
+  padding-inline: var(--gutter) var(--pad);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--pad);
+  scroll-padding-inline: var(--gutter) var(--pad);
   scrollbar-width: thin;
   scrollbar-color: var(--sol-base02) transparent;
 }
 .work.is-pinned .work__pin {
+  justify-content: center; /* em telas altas a sobra se divide em cima e embaixo */
   height: calc(100svh - var(--nav-h));
   overflow: hidden;
+  /* clip não cria contêiner rolável: o Tab em um card fora da tela não consegue
+     deslocar o pin (quem leva o card à vista é o focusin em work.js) */
+  overflow: clip;
 }
 .work.is-pinned .work__track {
   width: max-content;
@@ -329,14 +400,18 @@ html.js-motion .card.in .card__media {
   white-space: nowrap;
 }
 @media (hover: hover) and (pointer: fine) {
-  .card__link[data-cursor-label] {
-    cursor: none; /* a bolha "VER" faz o papel do cursor */
+  /* a bolha "VER" faz o papel do cursor. A classe só entra quando initCursorLabel
+     realmente liga a bolha; com movimento reduzido ou se o JS falhar, o cursor do
+     sistema continua visível sobre os cards. */
+  html.has-cursor-label .card__link[data-cursor-label] {
+    cursor: none;
   }
 }
 
-@media (max-width: 991px) {
+@media (max-width: 61.9375rem) {
   .work__track {
     flex-direction: column;
+    gap: clamp(2.25rem, 9vw, 3.5rem); /* o número do próximo card colava na legenda do anterior */
     overflow: visible;
     scroll-snap-type: none;
   }
@@ -346,13 +421,13 @@ html.js-motion .card.in .card__media {
     scroll-margin-top: calc(var(--nav-h) + 1rem);
   }
 }
-@media (max-width: 991px) and (pointer: coarse) {
+@media (max-width: 61.9375rem) and (pointer: coarse) {
   /* pilha vertical com scroll-snap (só nos cards; "proximity" não sequestra o scroll) */
   html {
     scroll-snap-type: y proximity;
   }
 }
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .work__bar {
     display: none;
   }
@@ -366,6 +441,10 @@ html.js-motion .card.in .card__media {
 .services__title {
   font-size: clamp(2.5rem, 7vw, 7rem);
   letter-spacing: -0.03em;
+}
+.services__title {
+  font-family: var(--font-sans-caps); /* "SERVIÇOS" é caixa alta: reserva calibrada p/ maiúsculas */
+  text-transform: uppercase; /* o HTML tem "Serviços": leitor de tela não soletra a palavra */
 }
 .stats {
   display: grid;
@@ -392,6 +471,7 @@ html.js-motion .card.in .card__media {
 }
 .stats__l {
   display: block;
+  overflow-wrap: anywhere;
   margin-top: 1.25rem;
   color: var(--fg-3);
 }
@@ -408,6 +488,48 @@ html.js-motion .card.in .card__media {
   line-height: 1.35;
   color: var(--fg);
   text-wrap: pretty;
+}
+
+/* ficha técnica: experiência · formação · certificações (reaproveita .about__row) */
+.ficha__cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pad);
+  align-items: start;
+}
+.ficha__h {
+  margin: 0 0 0.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--fg-3);
+}
+.ficha__item {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.ficha__when {
+  display: block;
+  color: var(--fg-3);
+}
+.ficha__what {
+  margin-top: 0.4rem;
+  font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
+  text-wrap: balance;
+}
+.ficha__where {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+@media (max-width: 61.9375rem) {
+  .ficha__cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
 }
 
 /* depoimentos: carrossel arrastável + barra de progresso (#B58900) */
@@ -544,18 +666,18 @@ html.js-motion .card.in .card__media {
   height: 1.1rem;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 61.9375rem) {
   .about__row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
   }
   .about__p {
     column-count: 1;
   }
 }
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .stats li,
   .stats li:first-child {
@@ -597,6 +719,8 @@ html.js-motion .card.in .card__media {
   color: var(--fg-3);
 }
 .acc {
+  /* container de largura: decide se número + título + ícone cabem numa linha */
+  container-type: inline-size;
   --n-col: 2.5rem;
   --gap: clamp(1rem, 3vw, 3rem);
   --px: clamp(0.75rem, 2vw, 1.5rem);
@@ -634,6 +758,8 @@ html.js-motion .card.in .card__media {
   color: var(--sol-ink-2); /* legível em base3 E em base2 */
 }
 .acc__t {
+  overflow-wrap: anywhere; /* última linha de defesa: "Desenvolvimento" a 24px mede ~190px */
+  hyphens: auto;
   font-size: clamp(1.5rem, 4.2vw, 4.25rem);
   line-height: 1.02;
   letter-spacing: -0.025em;
@@ -658,8 +784,18 @@ html.js-motion .card.in .card__media {
 .acc__panel {
   overflow: hidden;
 }
-html.js .acc__panel {
+/* Painéis fechados já nascem recolhidos (sem salto quando o JS assume; o aberto
+   fica visível desde o 1º paint). Enquanto o JS não liga o acordeão (.acc-ready),
+   uma rede de segurança em CSS reabre tudo após 6 s: se o bundle falhar, o texto
+   dos serviços não pode ficar preso atrás de botões que não respondem. */
+html.js:not(.acc-ready) .acc__item:not(.is-open) .acc__panel {
   height: 0;
+  animation: failsafe-open 0s 6s forwards;
+}
+@keyframes failsafe-open {
+  to {
+    height: auto;
+  }
 }
 .acc__in {
   display: grid;
@@ -673,6 +809,28 @@ html.js .acc__panel {
   line-height: 1.4;
   color: var(--sol-ink-2);
 }
+/* Número + título + ícone em UMA linha exigem ~20rem (a palavra mais longa do título tem
+   ~11,5rem a 1,5rem de fonte). Abaixo disso (celular de 320px; ou texto aumentado, já que tudo
+   é rem) o título ia para baixo do botão +/×. Empilha: número e ícone na 1ª linha, título
+   na largura toda. 20,4rem = 326px: 360px+ (328px de container) continuam numa linha. */
+@container (max-width: 20.4rem) {
+  .acc__btn {
+    grid-template-columns: minmax(0, 1fr) 2.75rem;
+    grid-template-areas:
+      "n i"
+      "t t";
+    gap: 0.5rem var(--gap);
+  }
+  .acc__n {
+    grid-area: n;
+  }
+  .acc__i {
+    grid-area: i;
+  }
+  .acc__t {
+    grid-area: t;
+  }
+}
 .acc__chips {
   display: flex;
   flex-wrap: wrap;
@@ -681,15 +839,20 @@ html.js .acc__panel {
 .acc__in .btn {
   grid-column: 1 / -1;
   justify-self: start;
+  /* com texto muito aumentado "ENTRE EM CONTATO" passava da coluna: quebra em vez de vazar */
+  max-width: 100%;
+  white-space: normal;
+  padding-block: 0.75rem;
+  text-align: center;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 61.9375rem) {
   .services__head {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
   .acc__in {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding-left: var(--px);
   }
 }
@@ -712,7 +875,8 @@ html.js .acc__panel {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  flex-wrap: wrap; /* só quebra com texto muito aumentado */
+  gap: 1rem clamp(1rem, 6vw, 2rem);
   padding-block: clamp(1rem, 2.5vw, 2rem);
   border-block: 2px solid var(--sol-base3);
   overflow: hidden;
@@ -736,8 +900,10 @@ html.js .acc__panel {
   }
 }
 .contact__cta-t {
+  font-family: var(--font-sans-caps);
   display: block;
-  font-size: clamp(3.2rem, 13.5vw, 15rem);
+  min-width: 0;
+  font-size: clamp(2.75rem, 13.5vw, 15rem); /* o piso era 3,2rem: a 320px a seta vazava 2px */
   line-height: 0.88;
   letter-spacing: -0.035em;
   text-transform: uppercase;
@@ -746,6 +912,7 @@ html.js .acc__panel {
   display: block;
 }
 .contact__arrow {
+  margin-left: auto;
   display: grid;
   place-items: center;
   flex: none;
@@ -763,7 +930,23 @@ html.js .acc__panel {
   gap: 0.25rem 2.5rem;
   margin-top: clamp(1.5rem, 3vw, 2.5rem);
 }
+/* selo de disponibilidade: quadrado cheio (raio 0), texto base3 sobre orange-ink */
+.contact__status {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin-top: 0.5rem;
+  color: var(--sol-base3);
+}
+.contact__status i {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--sol-base3);
+}
 .bracket {
+  max-width: 100%;
+  overflow-wrap: anywhere; /* "felixskmarcio2@gmail.com" é uma palavra só: com texto grande passava da tela */
   display: inline-flex;
   align-items: center;
   gap: 0.7em;
@@ -806,7 +989,7 @@ html.js .acc__panel {
 }
 .contact__foot {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 1.5rem;
   margin-top: clamp(3rem, 7vw, 6rem);
@@ -815,6 +998,7 @@ html.js .acc__panel {
 }
 .social {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 .social a {
@@ -843,9 +1027,9 @@ html.js .acc__panel {
   height: 1.25rem;
   fill: currentColor;
 }
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .contact__foot {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -898,6 +1082,28 @@ html.js .acc__panel {
   fill: currentColor;
 }
 
+/* ---------- Toque ------------------------------------------------------------
+   Sem hover, o "pressionado" é o único retorno do controle. Repete o que o mouse vê. */
+@media (hover: none) {
+  .btn:active::before,
+  .contact__cta:active::before {
+    transform: none;
+  }
+  .btn:active {
+    border-color: var(--sol-base03);
+  }
+  .social a:active {
+    background: var(--sol-base3);
+    color: var(--sol-orange-ink);
+  }
+  .strip__up:active,
+  .testi__btn:active:not(:disabled),
+  .marquee__pause:active {
+    background: var(--sol-base2);
+    color: var(--sol-base03);
+  }
+}
+
 /* ---------- movimento reduzido ------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
   html.js-motion .card__media {
@@ -905,6 +1111,9 @@ html.js .acc__panel {
   }
   .card__media video {
     filter: none;
+  }
+  .marquee__pause {
+    display: none; /* nada se move com movimento reduzido: não há o que pausar */
   }
   .marquee__track {
     width: auto;

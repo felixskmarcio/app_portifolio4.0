@@ -60,20 +60,24 @@ export function runPreloader({ reduced }) {
       setTimeout(() => {
         clearTimeout(failsafe);
         finish();
-      }, 450);
+      }, 250);
     });
     return { revealed, done };
   }
 
+  // Um único momento autoral: o traço desenha o logo e o preenchimento sobe, em ~1 s.
+  // (Antes eram 2 s fixos + wipe de 0,9 s: o H1 só aparecia em ~2,5 s no desktop e ~4 s
+  // num celular médio. O visitante decide em ~5 s; metade dela não pode ser carregamento.)
+  // Se a página ainda não carregou quando a animação acaba, o overlay espera, com teto.
   const progress = { v: 0 };
   const tl = gsap.timeline();
-  tl.to(strokes, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.12 }, 0)
-    .to(mask, { y: 0, duration: 1, ease: "power2.inOut" }, 0.9)
+  tl.to(strokes, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut", stagger: 0.06 }, 0)
+    .to(mask, { y: 0, duration: 0.55, ease: "power2.inOut" }, 0.5)
     .to(
       progress,
       {
         v: 100,
-        duration: 2,
+        duration: 1.05,
         ease: "power1.inOut",
         onUpdate: () => (count.textContent = String(Math.round(progress.v)).padStart(2, "0")),
       },
@@ -84,7 +88,7 @@ export function runPreloader({ reduced }) {
     await tl; // animação mínima completa…
     await Promise.race([
       Promise.all([loaded(), document.fonts.ready]), // …e a página realmente carregada
-      new Promise((r) => setTimeout(r, 3000)),
+      new Promise((r) => setTimeout(r, 2000)),
     ]);
     count.textContent = "100";
     await nextFrame();
@@ -92,9 +96,9 @@ export function runPreloader({ reduced }) {
     clearTimeout(failsafe);
     gsap.to(el, {
       clipPath: "inset(0% 0% 100% 0%)",
-      duration: 0.9,
+      duration: 0.7,
       ease: "easeOutQuint",
-      onStart: () => setTimeout(resolveRevealed, 380),
+      onStart: () => setTimeout(resolveRevealed, 240),
       onComplete: finish,
     });
   })();

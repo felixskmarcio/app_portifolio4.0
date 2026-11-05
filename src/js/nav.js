@@ -2,8 +2,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { $, $$ } from "./util.js";
 import { scrollToHash } from "./scroll.js";
 
-// <meta name="theme-color"> acompanha o fundo dominante da seção
-const THEME_COLOR = { light: "#FDF6E3", mid: "#EEE8D5", dark: "#002B36", accent: "#BF4210" };
+// <meta name="theme-color"> acompanha o fundo dominante da seção. As cores vêm dos tokens
+// (tokens.css é a fonte da verdade); antes eram 4 hex copiados aqui e podiam divergir.
+const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 /**
  * 2 · Troca de tema por seção: a 50% da viewport, o `data-theme` do body passa
@@ -14,6 +15,12 @@ const THEME_COLOR = { light: "#FDF6E3", mid: "#EEE8D5", dark: "#002B36", accent:
 export function initSections() {
   const meta = $('meta[name="theme-color"]');
   const links = $$("[data-nav-link]");
+  const THEME_COLOR = {
+    light: token("--sol-base3"),
+    mid: token("--sol-base2"),
+    dark: token("--sol-base03"),
+    accent: token("--sol-orange-ink"),
+  };
 
   const setActive = (key) =>
     links.forEach((a) => {
@@ -47,7 +54,7 @@ export function initNav({ lenis }) {
   const menu = $("#menu");
   const main = $("#main");
   const strip = $(".strip");
-  const desktopMQ = window.matchMedia("(min-width: 992px)");
+  const desktopMQ = window.matchMedia("(min-width: 62rem)");
 
   const setMenu = (open) => {
     toggle.setAttribute("aria-expanded", String(open));
@@ -85,6 +92,13 @@ export function initNav({ lenis }) {
     if (scrollToHash(lenis, hash)) {
       e.preventDefault();
       history.pushState(null, "", hash);
+      // o preventDefault tira o foco-de-navegação nativo: sem isto o próximo Tab continuava
+      // do link clicado em vez de da seção de destino
+      const target = document.getElementById(hash.slice(1));
+      if (target) {
+        if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+      }
     }
   });
 }

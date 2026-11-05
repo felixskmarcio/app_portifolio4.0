@@ -1,0 +1,303 @@
+/* ==========================================================================
+   CONTEXTOS — alto contraste (forced-colors) e impressão
+   Carregado por último. Nenhuma das duas situações usa a paleta da tela:
+   o navegador (alto contraste) ou o papel (impressão) mandam nas cores, e o que
+   existia SÓ como cor de fundo some. Aqui entra um substituto para cada um.
+   Não usa #000/#fff (check-contrast): em print, Canvas = papel e CanvasText = tinta.
+   ========================================================================== */
+
+/* ---------- Alto contraste (Windows "Temas de contraste") ------------------- */
+@media (forced-colors: active) {
+  /* decoração que só existia como cor/mistura: sai */
+  .ink,
+  .paper,
+  .grid-lines,
+  .reg,
+  .hero__mark {
+    display: none;
+  }
+
+  /* seção ativa do nav: o sublinhado era um fundo de 2px, que o modo apaga */
+  .nav__links a::after {
+    display: none;
+  }
+  .nav__links a[aria-current="location"] {
+    text-decoration: underline 2px;
+    text-underline-offset: 0.45em;
+  }
+
+  /* barras de progresso: trilho e preenchimento eram só fundo */
+  .work__bar,
+  .testi__bar {
+    border: 1px solid CanvasText;
+  }
+  .work__bar i,
+  .testi__bar i {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  /* pontos/quadrados que acompanham texto: sem eles o texto fica com um vão estranho */
+  .chip::before,
+  .contact__status i {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  /* "VER SITE" era uma pílula só de fundo */
+  .card__see {
+    border: 1px solid ButtonText;
+  }
+}
+
+/* ---------- Impressão ------------------------------------------------------- */
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm;
+}
+
+@media print {
+  /* 1 · tinta da marca sobre papel, em todas as seções. Os temas escuros e o laranja do
+     contato dependiam de FUNDO, que a impressora descarta por padrão: o texto claro
+     saía bege sobre branco (e o e-mail do contato, quase invisível). */
+  :root,
+  [data-theme] {
+    --bg: Canvas;
+    --fg: var(--sol-base03);
+    --fg-strong: var(--sol-base03);
+    --fg-2: var(--sol-base02);
+    --fg-3: var(--sol-base01);
+    --line: color-mix(in srgb, var(--sol-base03) 25%, transparent);
+    --line-strong: var(--sol-base03);
+    --focus: var(--sol-base03);
+  }
+  html,
+  body,
+  section,
+  footer.strip,
+  .marquee {
+    background: Canvas !important;
+    color: var(--sol-base03) !important;
+  }
+  body {
+    font-size: 11pt;
+    transition: none;
+  }
+
+  /* 2 · só existe para a tela */
+  .preloader,
+  .nav,
+  .menu,
+  .skip-link,
+  .wa-cta,
+  .cursor-label,
+  .paper,
+  .ink,
+  .grid-lines,
+  .reg,
+  .hero__mark,
+  .marquee__pause,
+  .strip__up,
+  .testi,
+  .work__meter,
+  .acc__i,
+  .card__see,
+  .contact__arrow,
+  [data-copy] {
+    display: none !important;
+  }
+
+  /* 3 · estados de entrada: na impressão tudo já aparece (revelações, máscara do vídeo, números) */
+  html.js-motion [data-reveal]:not(.is-split),
+  html.js-motion .hero__line-in {
+    visibility: visible !important;
+  }
+  .hero__line-in,
+  .rv-line {
+    transform: none !important;
+  }
+  html.js-motion .card__media {
+    clip-path: none !important;
+    animation: none !important;
+  }
+  .card__media :is(video, img) {
+    filter: none !important; /* miniaturas em cor, não em cinza/sépia */
+  }
+  .hero {
+    min-height: 0;
+    padding-top: 0;
+    overflow: visible;
+  }
+  .hero__main {
+    padding-block: 0 6mm;
+  }
+  main > section {
+    padding-block: 8mm !important;
+  }
+
+  /* 4 · faixa de stack: lista estática, sem a animação */
+  .marquee {
+    overflow: visible;
+  }
+  .marquee__view {
+    overflow: visible;
+    padding-inline: var(--pad);
+  }
+  .marquee__track {
+    display: block;
+    width: auto;
+    transform: none !important;
+  }
+  .marquee__skew {
+    transform: none !important;
+  }
+  .marquee__list[aria-hidden="true"] {
+    display: none;
+  }
+  .marquee__list {
+    flex: 0 1 auto; /* na tela é flex:none (não encolhe); no papel precisa quebrar linha */
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  .marquee__list li {
+    padding-block: 0.4rem;
+    font-size: 1.1rem !important;
+    color: var(--sol-base03) !important;
+  }
+  .marquee__list li:last-child::after {
+    display: none;
+  }
+
+  /* 5 · Trabalhos: galeria fixada vira grade de 2 colunas. O pin (position/height/padding do
+     ScrollTrigger) tem que ser desfeito: imprimiria só a 1ª tela e páginas em branco. */
+  .pin-spacer {
+    height: auto !important;
+    width: auto !important;
+    padding: 0 !important;
+    position: static !important;
+  }
+  .work.is-pinned .work__pin,
+  .work__pin {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-block: 0;
+  }
+  .work__track {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8mm;
+    width: auto !important;
+    padding-inline: var(--pad) !important; /* alinha com o título da seção */
+    overflow: visible !important;
+    transform: none !important;
+  }
+  .card {
+    width: auto !important;
+    max-width: none;
+    break-inside: avoid;
+  }
+  .card__num {
+    font-size: 2rem;
+  }
+  /* endereço do projeto no papel (a pílula "ver site" não leva a lugar nenhum) */
+  .card__link::after {
+    content: attr(href);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 7.5pt;
+    word-break: break-all;
+    color: var(--sol-base01);
+  }
+
+  /* 6 · Serviços: todos os painéis abertos (os fechados ficavam sem texto) */
+  .acc__panel {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .acc__item,
+  .ficha__item,
+  .ficha__col,
+  .stats li,
+  .contact {
+    break-inside: avoid;
+  }
+  .acc__item {
+    background: none !important;
+  }
+  .acc__btn {
+    grid-template-columns: var(--n-col) minmax(0, 1fr);
+  }
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  /* 7 · botões e links: sem fundo laranja (descartado), o texto claro sumia → contorno + tinta */
+  .btn,
+  .contact__cta,
+  .bracket {
+    color: var(--sol-base03) !important;
+    background: none !important;
+    border-color: var(--sol-base03) !important;
+  }
+  .btn::before,
+  .contact__cta::before {
+    display: none;
+  }
+  .contact__cta {
+    border-block-width: 1px;
+    padding-block: 3mm;
+  }
+  .contact__cta-t {
+    font-size: 2.4rem !important;
+  }
+  .contact__status,
+  .contact__status i {
+    color: var(--sol-base03) !important;
+  }
+  .contact__status i {
+    background: var(--sol-base03) !important;
+    print-color-adjust: exact;
+  }
+  /* redes: ícone sem rótulo não serve no papel; vira a lista de endereços */
+  .social {
+    display: grid;
+    gap: 1mm;
+  }
+  .social a {
+    display: block;
+    width: auto;
+    height: auto;
+    border: 0;
+    color: var(--sol-base03) !important;
+  }
+  .social svg {
+    display: none;
+  }
+  .social a::after {
+    content: attr(href);
+    font-family: var(--font-mono);
+    font-size: 8pt;
+    word-break: break-all;
+  }
+  .contact__foot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .strip__mark svg {
+    width: 45%;
+  }
+
+  /* 8 · o ponto colorido do chip é fundo: força imprimir */
+  .chip {
+    background: none !important;
+    color: var(--sol-base03);
+  }
+  .chip::before {
+    print-color-adjust: exact;
+  }
+}

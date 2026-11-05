@@ -1,7 +1,9 @@
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { $, $$, navHeight, pad2 } from "./util.js";
+import { motion } from "./motion.js";
 
-const DESKTOP = "(min-width: 992px)";
+const DESKTOP = "(min-width: 62rem)";
 
 /**
  * Trabalhos — galeria horizontal fixada (pin) no desktop; pilha vertical no mobile.
@@ -9,7 +11,7 @@ const DESKTOP = "(min-width: 992px)";
  *  · 8 · entrada em clip-path quando o card aparece (a transição é CSS: .in)
  *  · o card vira cor ao passar pelo centro da tela (.is-center) e atualiza o contador
  */
-export function initWork({ reduced }) {
+export function initWork({ lenis, reduced }) {
   const section = $("#work");
   const pin = $(".work__pin", section);
   const track = $("[data-work-track]", section);
@@ -20,28 +22,42 @@ export function initWork({ reduced }) {
   const bar = $("[data-work-bar]", section);
   const total = cards.length;
 
-  // vídeos: só perto da tela
+  // Vídeos: só perto da tela E só quando movimento e dados permitem. Com movimento
+  // reduzido, Save-Data, conexão lenta ou pausa global, o card fica no pôster e o
+  // arquivo nem é baixado (antes: ~7 MB mesmo no celular).
+  const lightConnection = () => {
+    const c = navigator.connection;
+    return !c || !(c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType ?? ""));
+  };
+  const videos = $$("video[data-lazy-video]", track);
+  const near = new Set();
+  const syncVideo = (v) => {
+    if (near.has(v) && !reduced && !motion.paused && lightConnection()) {
+      if (!v.dataset.loaded) {
+        v.dataset.loaded = "1";
+        v.preload = "metadata";
+        v.load();
+      }
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+  };
   const videoIO = new IntersectionObserver(
     (entries) => {
       for (const { target: v, isIntersecting } of entries) {
-        if (isIntersecting) {
-          if (!v.dataset.loaded) {
-            v.dataset.loaded = "1";
-            v.preload = "metadata";
-            v.load();
-          }
-          if (!reduced) v.play().catch(() => {});
-        } else {
-          v.pause();
-        }
+        if (isIntersecting) near.add(v);
+        else near.delete(v);
+        syncVideo(v);
       }
     },
     { rootMargin: "200px" },
   );
-  $$("video[data-lazy-video]", track).forEach((v) => {
+  videos.forEach((v) => {
     v.muted = true; // autoplay exige muted também como propriedade
     videoIO.observe(v);
   });
+  motion.onChange(() => videos.forEach(syncVideo));
 
   // entrada: marca .in quando o card aparece
   const inIO = new IntersectionObserver(
@@ -120,7 +136,33 @@ export function initWork({ reduced }) {
       },
     });
 
+    // Teclado: com o trilho transladado, o Tab chega a cards fora da tela. Em vez de
+    // deixar o navegador rolar o .work__pin (o que desalinha cabeçalho e contador),
+    // levamos a PÁGINA ao ponto do pin em que aquele card aparece. O progresso
+    // i/(n-1) é o mesmo que o contador usa e deixa o card inteiro à vista.
+    // Só foco de teclado (:focus-visible): clique com o mouse não move a página.
+    const onFocusIn = (e) => {
+      if (!e.target.matches(":focus-visible")) return;
+      const card = e.target.closest("[data-card]");
+      const i = cards.indexOf(card);
+      const st = ScrollTrigger.getById("work");
+      if (i < 0 || !st || total < 2) return;
+      const r = card.getBoundingClientRect();
+      if (r.left >= 0 && r.right <= document.documentElement.clientWidth) return; // já está à vista
+      const y = st.start + (i / (total - 1)) * (st.end - st.start);
+      if (lenis) lenis.scrollTo(y, { duration: 0.7, force: true });
+      else window.scrollTo({ top: y });
+    };
+    // cinto e suspensório para navegadores sem `overflow: clip`
+    const resetPin = () => {
+      if (pin.scrollLeft || pin.scrollTop) pin.scrollTo(0, 0);
+    };
+    track.addEventListener("focusin", onFocusIn);
+    pin.addEventListener("scroll", resetPin, { passive: true });
+
     return () => {
+      track.removeEventListener("focusin", onFocusIn);
+      pin.removeEventListener("scroll", resetPin);
       section.classList.remove("is-pinned");
       gsap.set(track, { clearProps: "transform" });
     };

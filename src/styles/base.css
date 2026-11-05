@@ -25,6 +25,36 @@
   font-display: swap;
 }
 
+/* Fontes reserva com a MÉTRICA das reais. As fontes vêm de um CDN de terceiros e
+   `swap` troca a reserva quando chegam; com larguras diferentes, cada quebra de
+   linha mudava e a página dava saltos (CLS). `size-adjust` iguala a largura.
+   Medido em 2026-11-04 (canvas, 100px):
+   · Telegraf / Arial: 1,0234 em texto misto; 0,9344 em CAIXA ALTA, calibrado na palavra
+     DESENVOLVEDOR do H1 (é ela que decide a largura do hero; em pangrama de maiúsculas
+     dava 0,9568 e o H1 reserva ficava 2,4% largo demais)
+   · Fraktion Mono: 0,6 em por caractere. Consolas = 0,5498 em → 109,13%; Menlo ≈ 0,602 em → 99,65%
+   `local()` ausente no sistema = a face é ignorada e a próxima família da pilha entra. */
+@font-face {
+  font-family: "Telegraf Fallback";
+  src: local("Arial");
+  size-adjust: 102.34%;
+}
+@font-face {
+  font-family: "Telegraf Fallback Caps";
+  src: local("Arial");
+  size-adjust: 93.44%;
+}
+@font-face {
+  font-family: "Fraktion Fallback Consolas";
+  src: local("Consolas");
+  size-adjust: 109.13%;
+}
+@font-face {
+  font-family: "Fraktion Fallback Menlo";
+  src: local("Menlo");
+  size-adjust: 99.65%;
+}
+
 *,
 *::before,
 *::after {
@@ -46,6 +76,7 @@ html.menu-open {
 
 body {
   margin: 0;
+  overflow-wrap: break-word; /* palavra mais larga que a coluna (texto aumentado) quebra, não vaza */
   min-height: 100vh;
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -100,6 +131,17 @@ button {
   border: 0;
   padding: 0;
   cursor: pointer;
+}
+
+/* O flash cinza padrão do toque brigava com a paleta; o retorno do toque é o :active
+   de cada controle (ver "Toque" em sections.css). */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+/* alvo de foco por script (âncoras): recebe foco, não contorno */
+[tabindex="-1"]:focus {
+  outline: none;
 }
 
 /* 14 · Seleção estilo editor (a mesma do VS Code) */

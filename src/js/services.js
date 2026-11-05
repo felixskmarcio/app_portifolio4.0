@@ -41,6 +41,8 @@ export function initAccordion({ reduced }) {
     panel.inert = !open;
     gsap.set(panel, { height: open ? "auto" : 0 });
   });
+  // desarma a rede de segurança em CSS (sections.css): daqui em diante o GSAP manda
+  document.documentElement.classList.add("acc-ready");
 
   items.forEach((item) => {
     parts(item).btn.addEventListener("click", () => {

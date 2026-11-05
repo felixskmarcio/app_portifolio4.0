@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "scripts/brand/og.html"
+        ],
+        "createdAt": "2026-11-04T22:29:36.109Z",
+        "reason": "Solarized Light (base3 #fdf6e3) is the palette the owner declared mandatory in the 2026-11-03 briefing (PRODUCT.md, Brand Commitments); og.html reuses src/styles/tokens.css on purpose. Decided from PRODUCT.md, not re-confirmed this session."
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-04T22:29:36.369Z",
+        "reason": "False positive: the source scan reads index.html without the CSS imported by src/main.js, so h1 resolves to 16px. Rendered page measured in headless Chrome 2026-11-04: h1 166px at 1440 vs 16px body (hero), h2 up to 7rem."
+      }
+    ]
+  }
+}

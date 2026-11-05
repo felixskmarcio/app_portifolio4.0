@@ -14,6 +14,14 @@ export const navHeight = () => {
   return nav ? nav.getBoundingClientRect().height : 56;
 };
 
+/**
+ * Devolve o controle à thread principal: entradas do usuário e frames passam na
+ * frente do resto do trabalho. Serve para quebrar o boot em tarefas curtas (<50 ms)
+ * em vez de uma única de ~250 ms num celular médio (TBT / INP).
+ */
+export const yieldToMain = () =>
+  globalThis.scheduler?.yield ? globalThis.scheduler.yield() : new Promise((r) => setTimeout(r, 0));
+
 /** rAF-debounce: agrupa chamadas repetidas no mesmo frame. */
 export function rafThrottle(fn) {
   let raf = 0;

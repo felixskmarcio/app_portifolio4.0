@@ -74,6 +74,8 @@ html.js .preloader {
   border-bottom: 1px solid var(--sol-line);
 }
 .nav__in {
+  /* container de largura: o CTA do nav só aparece se couber (ver @container abaixo) */
+  container-type: inline-size;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,11 +88,21 @@ html.js .preloader {
 .nav__logo {
   display: flex;
   align-items: center;
+  min-width: 0; /* texto muito aumentado: o logo cede antes de empurrar o botão do menu para fora */
   min-height: 2.75rem;
   color: var(--sol-base03);
 }
-.nav__logo svg {
-  width: 7rem;
+.nav__mark {
+  --w: 7rem;
+  --dot: calc(var(--w) * 2 / 140); /* r=1 no viewBox de 140 */
+  position: relative;
+  display: block;
+  width: var(--w);
+  max-width: 100%;
+  min-width: 0; /* em telas muito estreitas o logo ainda pode encolher */
+}
+.nav__mark svg {
+  width: 100%;
   height: auto;
   aspect-ratio: 140 / 24;
   overflow: visible;
@@ -98,7 +110,19 @@ html.js .preloader {
 .felix-mark {
   fill: currentColor;
 }
+/* Pontos do logo: <i> HTML em vez de <circle> SVG. Animar `transform` em elemento SVG
+   refaz o layout do SVG a cada frame (medido: 60 layouts/s e ~180 ms/s de CPU num
+   celular médio parado no topo); `translate` num <i> roda no compositor. */
 .particle {
+  position: absolute;
+  /* centrado por offset (sem % no transform): a deriva fica só em px */
+  left: calc(var(--x) - var(--dot) / 2);
+  top: calc(var(--y) - var(--dot) / 2);
+  width: var(--dot);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--c);
+  will-change: transform; /* 5 camadas de ~2px: barato, e garante o compositor */
   animation: drift 6s ease-in-out infinite alternate;
 }
 .particle:nth-of-type(2) {
@@ -124,6 +148,10 @@ html.js .preloader {
   to {
     transform: translate(3px, -2px);
   }
+}
+/* botão "Pausar animações" (faixa de stack): pausa também os pontos */
+html.motion-paused .particle {
+  animation-play-state: paused;
 }
 
 .nav__links {
@@ -198,7 +226,7 @@ html.js .preloader {
   transform: translateY(-0.275rem) rotate(-45deg);
 }
 
-@media (min-width: 992px) {
+@media (min-width: 62rem) {
   .nav__links {
     display: flex;
   }
@@ -206,13 +234,36 @@ html.js .preloader {
     display: none;
   }
 }
-@media (max-width: 479px) {
-  .nav__logo svg {
-    width: 5.5rem;
+@media (max-width: 29.9375rem) {
+  .nav__mark {
+    --w: 5.5rem;
   }
   .nav__cta {
     padding-inline: 0.75rem;
-    font-size: 0.75rem;
+  }
+}
+@media (max-width: 22.4375rem) {
+  /* 320px: logo (88) + CTA + menu não cabem em 288px; compacta o CTA em vez de
+     espremer o logo (antes ele encolhia para ~61px) */
+  .nav__in {
+    gap: 0.5rem;
+  }
+  .nav__right {
+    gap: 0.25rem;
+  }
+  .nav__cta {
+    padding-inline: 0.5rem;
+    font-size: 0.75rem; /* só aqui: o resto dos botões usa 0,8125rem */
+    letter-spacing: 0.04em;
+  }
+}
+/* Logo + CTA + menu precisam de ~17,9rem. Tudo aqui escala com o texto (rem), então a
+   conta vale em qualquer tamanho de fonte: com a fonte padrão aumentada o CTA sairia da
+   tela e empurraria o botão do menu junto (celular de 390px a 150%: menu inalcançável).
+   Sem espaço, o CTA sai do nav; continua no rodapé do menu e no botão flutuante. */
+@container (max-width: 17.9rem) {
+  .nav__cta {
+    display: none;
   }
 }
 
@@ -225,6 +276,9 @@ html.js .preloader {
   flex-direction: column;
   justify-content: space-between;
   padding: calc(var(--nav-h) + 2rem) var(--pad) 2rem;
+  /* o conteúdo pode passar da altura (celular na horizontal, texto grande): rola */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--bg);
   color: var(--fg);
   visibility: hidden;
@@ -259,7 +313,30 @@ html.js .preloader {
   display: grid;
   gap: 1rem;
 }
-@media (min-width: 992px) {
+.menu__foot .btn {
+  max-width: 100%;
+  white-space: normal; /* texto aumentado: o CTA do menu quebra em vez de vazar */
+  padding-block: 0.75rem;
+  text-align: center;
+}
+/* Telas baixas (celular na horizontal: 568×320 a 932×430): 4 links de 40–80px + CTA não
+   cabiam, o último link e o CTA ficavam fora da tela e o menu não rolava. Links em 2
+   colunas, tipografia proporcional à ALTURA, margens menores. */
+@media (max-height: 32rem) {
+  .menu {
+    gap: 1rem;
+    padding-block: calc(var(--nav-h) + 1rem) 1rem;
+  }
+  .menu__links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--pad);
+  }
+  .menu__links a {
+    font-size: clamp(1.5rem, 9svh, 2.75rem);
+  }
+}
+@media (min-width: 62rem) {
   .menu {
     display: none;
   }
@@ -303,6 +380,9 @@ html.js .preloader {
     transform: translate(-2px, -2px);
   }
 }
+.wa-cta:active {
+  transform: translate(2px, 2px);
+}
 /* 2 · a cor do botão acompanha o tema da seção sob ele */
 body[data-theme="accent"] .wa-cta {
   background: var(--sol-base03);
@@ -312,7 +392,7 @@ body[data-theme="accent"] .wa-cta {
 body[data-theme="dark"] .wa-cta {
   box-shadow: 4px 4px 0 var(--sol-base2);
 }
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .wa-cta {
     padding: 0;
   }
@@ -352,8 +432,11 @@ html.menu-open .wa-cta {
   opacity: 0;
   transform: scale(0);
 }
+/* A bolha só passa a existir no 1º hover num card (.is-armed, em ui.js). Com display:grid
+   desde o início, todo visitante de desktop baixava a Fraktion Mono Bold (36 KB) só para
+   um elemento com scale(0) que a maioria nunca chega a ver. */
 @media (hover: hover) and (pointer: fine) {
-  .cursor-label {
+  .cursor-label.is-armed {
     display: grid;
   }
 }

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--
+  Fonte da imagem de compartilhamento (public/og.png, 1200×630).
+  Só usa texto que já está na página (hero) e o logo FELIXBR original, recolorido
+  com os tokens de src/styles/tokens.css. Para regerar: abra este arquivo no Chrome
+  em 1200×630 (sem escala) e salve a captura como public/og.png.
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>og</title>
+<style>
+  @font-face {
+    font-family: "Telegraf";
+    src: url("https://cdn.prod.website-files.com/66a68529752ea579681df340/66a6922a0faa848188f8a262_PPTelegraf-Regular.woff2") format("woff2");
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: "Fraktion Mono";
+    src: url("https://cdn.prod.website-files.com/66a68529752ea579681df340/66a692586f3bdb0490066a56_PPFraktionMono-Regular.woff2") format("woff2");
+    font-weight: 400;
+  }
+  :root {
+    --base03: #002b36;
+    --base02: #073642;
+    --base3: #fdf6e3;
+    --orange-ink: #bf4210;
+    --ink-2: #385c62;
+    --line: rgba(7, 54, 66, 0.15);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; background: var(--base3); }
+  body { position: relative; font-family: "Telegraf", system-ui, sans-serif; color: var(--base02); }
+
+  /* grade de 12 colunas, igual à do hero */
+  .grid {
+    position: absolute; inset: 0 64px 72px;
+    background:
+      linear-gradient(to right, var(--line) 1px, transparent 1px) 0 0 / calc(100% / 12) 100% repeat-x,
+      linear-gradient(to right, var(--line) 1px, transparent 1px) 100% 0 / 1px 100% no-repeat;
+  }
+  .reg { position: absolute; top: 14px; width: 16px; height: 16px; color: var(--base03); opacity: .6;
+    background: linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat, linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat; }
+  .reg.l { left: 56px; } .reg.r { right: 56px; }
+
+  .top { position: absolute; left: 64px; right: 64px; top: 44px; display: flex; justify-content: space-between; align-items: center; }
+  .logo { width: 168px; height: auto; fill: var(--base03); }
+  .mono { font-family: "Fraktion Mono", ui-monospace, monospace; font-size: 17px; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; }
+  .name { color: var(--ink-2); }
+
+  h1 {
+    position: absolute; left: 64px; top: 128px; width: 1072px;
+    font-weight: 400; font-size: 132px; line-height: .92; letter-spacing: -0.025em;
+    text-transform: uppercase; color: var(--base03);
+  }
+  h1 span { display: block; width: max-content; }
+
+  .meta { position: absolute; left: 64px; right: 64px; top: 396px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); color: var(--ink-2); }
+  .meta p { padding: 20px 20px 0 0; display: grid; gap: 6px; }
+  .meta p + p { padding-left: 20px; border-left: 1px solid var(--line); }
+
+  .band { position: absolute; left: 0; right: 0; bottom: 0; height: 72px; background: var(--orange-ink); color: var(--base3);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 64px; }
+  .band .mono { font-size: 20px; }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <i class="reg l"></i><i class="reg r"></i>
+
+  <div class="top">
+    <svg class="logo" viewBox="0 0 140 24" aria-hidden="true">
+      <path d="M2 22V2H18V5H6V10H16V13H6V22H2Z" />
+      <path d="M22 22V2H38V5H26V10H36V13H26V19H38V22H22Z" />
+      <path d="M42 22V2H46V19H58V22H42Z" />
+      <path d="M62 22V2H66V22H62Z" />
+      <path d="M70 22L76 12L70 2H75L78 8L81 2H86L80 12L86 22H81L78 16L75 22H70Z" />
+      <path d="M90 22V2H104C107 2 109 4 109 7C109 9 108 10 106 11C108 12 110 14 110 17C110 20 107 22 104 22H90ZM94 5V10H103C104 10 105 9 105 8C105 7 104 5 103 5H94ZM94 13V19H104C105 19 106 18 106 17C106 16 105 13 104 13H94Z" />
+      <path d="M114 22V2H128C131 2 133 4 133 7C133 10 131 11 129 11L134 22H129L125 12H118V22H114ZM118 5V9H127C128 9 129 8 129 7C129 6 128 5 127 5H118Z" />
+    </svg>
+    <span class="mono name">Marcio Felix</span>
+  </div>
+
+  <h1><span>Desenvolvedor</span><span>Frontend</span></h1>
+
+  <div class="meta mono">
+    <p><span>Developer Frontend</span><span>HTML · CSS · JS</span></p>
+    <p><span>Vibe Coding Coach</span><span>Next.js · React · Vue</span></p>
+    <p><span>AI</span><span>N8N · Langflow</span></p>
+  </div>
+
+  <div class="band mono">
+    <span>portifolio.felixbr.org</span>
+  </div>
+</body>
+</html>

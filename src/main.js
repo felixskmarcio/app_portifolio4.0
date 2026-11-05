@@ -3,6 +3,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/chrome.css";
 import "./styles/sections.css";
+import "./styles/contexts.css";
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -10,10 +11,11 @@ import { SplitText } from "gsap/SplitText";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { CustomEase } from "gsap/CustomEase";
 
-import { reduceMQ, coarseMQ } from "./js/util.js";
+import { $$, reduceMQ, coarseMQ, yieldToMain } from "./js/util.js";
 import { runPreloader } from "./js/preloader.js";
 import { initScroll, scrollToHash } from "./js/scroll.js";
 import { fitHero, heroIntro, heroScroll } from "./js/hero.js";
+import { initMotionToggle } from "./js/motion.js";
 import { initMarquee } from "./js/marquee.js";
 import { initReveal } from "./js/reveal.js";
 import { initWork } from "./js/work.js";
@@ -40,25 +42,37 @@ async function boot() {
   if (document.readyState === "loading") {
     await new Promise((r) => document.addEventListener("DOMContentLoaded", r, { once: true }));
   }
-  await document.fonts.ready;
+  // As fontes vêm de um CDN de terceiros: não deixar o site inteiro (pin, revelações,
+  // intro) refém dele. Depois de 1,2 s o boot segue; fitHero e o SplitText
+  // (autoSplit) se refazem sozinhos quando a fonte chegar.
+  await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1200))]);
 
   fitHero();
   initRoll();
+  initMotionToggle();
+  await yieldToMain();
 
   const lenis = initScroll({ reduced, coarse });
   lenis?.stop(); // parado até o preloader sair
 
   // ORDEM IMPORTA: ScrollTriggers na ordem em que aparecem na página,
   // com o pin do #work antes de tudo o que vem depois dele.
+  // O `await yieldToMain()` entre os blocos só quebra o trabalho em tarefas curtas
+  // (a cadeia inteira era UMA tarefa de ~265 ms num celular com CPU 4× mais lenta);
+  // a ordem de criação continua exatamente a mesma.
   heroScroll({ reduced });
   initMarquee({ lenis, reduced });
-  initWork({ reduced });
-  initReveal({ reduced });
+  await yieldToMain();
+  initWork({ lenis, reduced });
+  await yieldToMain();
+  await initReveal({ reduced });
   initCounts({ reduced });
   initTestimonials({ reduced });
+  await yieldToMain();
   initAccordion({ reduced });
   initSections();
   initNav({ lenis });
+  await yieldToMain();
 
   initMagnetic({ reduced });
   initCursorLabel({ reduced });
@@ -66,6 +80,14 @@ async function boot() {
   initInk({ reduced });
 
   ScrollTrigger.refresh();
+
+  // Impressão: quem imprime sem ter rolado a página inteira ainda tem números em 0 e títulos
+  // por revelar. O CSS (contexts.css) cuida do layout; isto leva o que é texto/animação ao
+  // estado final.
+  window.addEventListener("beforeprint", () => {
+    $$("[data-count]").forEach((el) => (el.textContent = el.dataset.count));
+    ScrollTrigger.getAll().forEach((st) => st.vars.once && st.animation?.progress(1));
+  });
 
   await pre.revealed;
   heroIntro({ reduced });
@@ -86,5 +108,7 @@ boot().catch((err) => {
   // se algo quebrar, a página precisa continuar legível
   console.error("[portfolio] falha ao iniciar:", err);
   document.querySelector(".preloader")?.remove();
-  document.documentElement.classList.remove("js-motion");
+  // sem .js / .js-motion todo o conteúdo volta ao estado "sem JavaScript" (acordeão
+  // aberto, títulos e cards visíveis), em vez de ficar preso em estados de entrada
+  document.documentElement.classList.remove("js", "js-motion");
 });

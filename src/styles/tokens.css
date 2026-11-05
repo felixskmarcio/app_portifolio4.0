@@ -31,8 +31,10 @@
   --sol-dim-dark: #bec2b5; /* parágrafo secundário em escuro (white-75) */
 
   /* --- Tipografia -------------------------------------------------------- */
-  --font-sans: "Telegraf", system-ui, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "Fraktion Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* as faces "… Fallback" (base.css) têm a largura das reais: troca de fonte sem salto */
+  --font-sans: "Telegraf", "Telegraf Fallback", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-sans-caps: "Telegraf", "Telegraf Fallback Caps", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Fraktion Mono", "Fraktion Fallback Consolas", "Fraktion Fallback Menlo", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* --- Movimento --------------------------------------------------------- */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -49,7 +51,6 @@
      Também vale para [data-theme="light"] (abaixo). Sem isso, uma seção
      "light" herdaria as variáveis do <body>, cujo tema muda com a rolagem. */
   --bg: var(--sol-base3);
-  --surface: var(--sol-base2);
   --fg: var(--sol-base02);
   --fg-strong: var(--sol-base03);
   --fg-2: var(--sol-ink-2);
@@ -61,7 +62,6 @@
 
 [data-theme="light"] {
   --bg: var(--sol-base3);
-  --surface: var(--sol-base2);
   --fg: var(--sol-base02);
   --fg-strong: var(--sol-base03);
   --fg-2: var(--sol-ink-2);
@@ -74,7 +74,6 @@
 /* Intermediário: seção sobre base2 (o secundário vira #385C62, nunca base01) */
 [data-theme="mid"] {
   --bg: var(--sol-base2);
-  --surface: var(--sol-base3);
   --fg: var(--sol-base02);
   --fg-strong: var(--sol-base03);
   --fg-2: var(--sol-ink-2);
@@ -86,7 +85,6 @@
 /* Escuro: base03 + texto base2 */
 [data-theme="dark"] {
   --bg: var(--sol-base03);
-  --surface: var(--sol-base02);
   --fg: var(--sol-base2);
   --fg-strong: var(--sol-base2);
   --fg-2: var(--sol-dim-dark);
@@ -99,7 +97,6 @@
 /* Destaque: bloco 100% orange-ink com texto base3 (4,86:1) */
 [data-theme="accent"] {
   --bg: var(--sol-orange-ink);
-  --surface: var(--sol-orange-ink);
   --fg: var(--sol-base3);
   --fg-strong: var(--sol-base3);
   --fg-2: var(--sol-base3);
